@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titre %}Revue des comptes AD{% endblock %} · BICEC</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</head>
+<body>
+  <a class="evitement" href="#contenu">Aller au contenu</a>
+
+  <header class="bandeau">
+    <a class="marque" href="{{ url_for('accueil') }}">
+      {% if logo %}
+        <img class="marque__logo" src="{{ url_for('static', filename=logo) }}" alt="BICEC">
+      {% else %}
+        <span class="marque__texte">BICEC</span>
+      {% endif %}
+      <span class="marque__outil">Revue des comptes Active Directory</span>
+    </a>
+    <p class="bandeau__service">DOQSI, Département Sécurité, Normes et Contrôles</p>
+  </header>
+
+  <div class="cadre">
+    <nav class="chaine" aria-label="Étapes de la revue">
+      <p class="chaine__titre">Déroulement d'une campagne</p>
+      <ol class="chaine__etapes">
+        {% for e in etapes %}
+          <li class="etape{% if e.cle in actives|default([]) %} etape--active{% endif %}{% if not e.dispo %} etape--a-venir{% endif %}">
+            <span class="etape__num">{{ loop.index }}</span>
+            <span class="etape__texte">
+              <span class="etape__titre">{{ e.titre }}</span>
+              <span class="etape__aide">{% if e.dispo %}{{ e.aide }}{% else %}En développement{% endif %}</span>
+            </span>
+          </li>
+        {% endfor %}
+      </ol>
+      <p class="chaine__note">Les fichiers déposés restent sur ce poste. Rien n'est envoyé sur le réseau.</p>
+    </nav>
+
+    <main id="contenu" class="contenu">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for categorie, message in messages %}
+          <p class="message message--{{ categorie }}" role="status">{{ message }}</p>
+        {% endfor %}
+      {% endwith %}
+      {% block contenu %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>

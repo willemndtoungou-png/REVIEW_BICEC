@@ -1,0 +1,16 @@
+Emplacement du logo officiel de la BICEC
+========================================
+
+Déposez ici le logo officiel sous l'un de ces noms (le premier trouvé est utilisé) :
+
+    logo-bicec.svg   (de préférence : net à toutes les tailles)
+    logo-bicec.png
+    logo-bicec.jpg
+
+Aucun redémarrage du code n'est nécessaire : rechargez simplement la page.
+Tant qu'aucun fichier n'est présent, l'en-tête affiche le mot « BICEC » en texte.
+
+Où obtenir le fichier : auprès de la Direction de la Communication ou sur l'intranet,
+avec la charte graphique (elle donne aussi les codes couleur exacts à reporter dans
+static/css/style.css, bloc :root). Utiliser la version officielle, sans la redessiner
+ni la modifier : c'est une marque déposée.

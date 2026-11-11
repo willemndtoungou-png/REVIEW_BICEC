@@ -1,0 +1,43 @@
+{
+  "_commentaire": "Règles de la revue, modifiables sans toucher au code. Nomenclatures confirmées par l'encadreur le 10/11/2026 : stagiaire_<nom>, prestataire_<nom>, employé = nom sans préfixe. Aucun autre type de compte.",
+
+  "categories": {
+    "stagiaire": {
+      "libelle": "Stagiaire",
+      "libelle_pluriel": "Stagiaires",
+      "prefixe": "stagiaire_",
+      "temporaire": true
+    },
+    "prestataire": {
+      "libelle": "Prestataire",
+      "libelle_pluriel": "Prestataires",
+      "prefixe": "prestataire_",
+      "temporaire": true
+    },
+    "employe": {
+      "libelle": "Employé",
+      "libelle_pluriel": "Employés",
+      "prefixe": null,
+      "temporaire": false
+    }
+  },
+  "categorie_par_defaut": "employe",
+
+  "_similarite": "Un identifiant dont le début ressemble à un préfixe (ex. « stagiare_ », « presta_ », « stagiaire-x ») est signalé comme non conforme. 0,75 = 75 % de ressemblance minimum.",
+  "seuil_similarite_prefixe": 0.75,
+
+  "dormance": {
+    "seuil_jours": 90,
+    "inclure_jamais_connectes": true,
+    "exclure_desactives": true,
+    "exclure_expires": true
+  },
+
+  "_expires_non_desactives": "Dans l'AD, un compte arrivé à expiration n'est pas désactivé : la connexion est refusée mais l'indicateur « Enabled » reste vrai. Ce constat sert au nettoyage, pas à signaler un risque.",
+  "signaler_expires_non_desactives": true,
+
+  "valeurs_statut": {
+    "actif": ["enabled", "active", "actif", "activé", "active", "true", "1", "oui", "yes", "ouvert", "locked", "verrouillé"],
+    "desactive": ["disabled", "inactive", "désactivé", "desactive", "false", "0", "non", "no", "fermé", "ferme"]
+  }
+}

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block titre %}Erreur {{ code }}{% endblock %}
+{% block contenu %}
+<section class="entete-page">
+  <h1>{% if code == 404 %}Cette campagne n'existe pas ou a été supprimée{% else %}La demande n'a pas abouti{% endif %}</h1>
+  <p class="chapeau">{% if code == 404 %}Vérifiez le lien ou repartez de la liste des campagnes.{% else %}{{ message }}{% endif %}</p>
+  <p><a class="bouton bouton--secondaire" href="{{ url_for('accueil') }}">Revenir aux campagnes</a></p>
+</section>
+{% endblock %}

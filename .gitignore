@@ -1,0 +1,8 @@
+# Données de campagne et journal : ne jamais versionner
+instance/
+*.log
+# Logo officiel : fichier de marque, à ne pas publier dans un dépôt public
+static/img/logo-bicec.*
+__pycache__/
+.pytest_cache/
+.venv/

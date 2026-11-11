@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% set actives = ["depot", "controle", "categorisation", "anomalies", "rapport"] %}
+{% block titre %}{{ c.nom }}{% endblock %}
+{% block contenu %}
+{% set libelles = {"erreur": "Bloquant", "alerte": "À corriger", "info": "Information"} %}
+<section class="entete-page">
+  <p class="fil"><a href="{{ url_for('accueil') }}">Campagnes</a> / Résultats</p>
+  <h1>{{ c.nom }}</h1>
+  <p class="chapeau">Situation au {{ c.date_campagne }}, d'après {{ c.synthese.lisibles }} export{{ 's' if c.synthese.lisibles > 1 }} ADAudit Plus.</p>
+</section>
+
+<dl class="synthese">
+  <div><dt>Comptes analysés</dt><dd>{{ revue.comptes|length }}</dd></div>
+  <div class="{{ 'synthese--erreur' if anomalies }}"><dt>Anomalies</dt><dd>{{ revue.nb('anomalie') }}</dd></div>
+  <div class="{{ 'synthese--alerte' if notifications }}"><dt>Notifications à vérifier</dt><dd>{{ revue.nb('notification') }}</dd></div>
+  <div class="{{ 'synthese--erreur' if c.synthese.erreurs else ('synthese--alerte' if c.synthese.alertes) }}">
+    <dt>Points de qualité</dt><dd>{{ c.synthese.erreurs + c.synthese.alertes }}</dd></div>
+</dl>
+
+<div class="barre-rapport">
+  <p>Le rapport PDF reprend la synthèse, les anomalies, les notifications, l'état des comptes temporaires et la qualité des données.</p>
+  {% if revue.comptes %}
+    <a class="bouton bouton--principal" href="{{ url_for('rapport_pdf', cid=c.id) }}">Télécharger le rapport PDF</a>
+  {% else %}
+    <button type="button" class="bouton bouton--principal" disabled>Télécharger le rapport PDF</button>
+  {% endif %}
+</div>
+
+{% if not revue.comptes %}
+  <p class="verdict verdict--erreur">Aucun compte n'a pu être lu : aucun export ne contient de colonne d'identifiant reconnue.
+    Consultez le contrôle qualité plus bas.</p>
+{% endif %}
+{% for r in revue.regles_non_evaluees %}<p class="verdict verdict--alerte">{{ r }}</p>{% endfor %}
+
+{% if revue.comptes %}
+<section class="bloc">
+  <h2>Comptes par catégorie</h2>
+  <div class="tableau-defile">
+    <table class="tableau">
+      <thead><tr><th scope="col">Catégorie</th><th scope="col" class="num">Total</th><th scope="col" class="num">Ouverts</th>
+        <th scope="col" class="num">Expirés non désactivés</th><th scope="col" class="num">Désactivés</th><th scope="col" class="num">Statut inconnu</th></tr></thead>
+      <tbody>
+        {% for cle, r in repartition %}
+          <tr><td><strong>{{ categories[cle].libelle_pluriel }}</strong>
+                {% if categories[cle].prefixe %}<span class="discret">{{ categories[cle].prefixe }}…</span>{% else %}<span class="discret">sans préfixe</span>{% endif %}</td>
+              <td class="num">{{ r.total }}</td><td class="num">{{ r.actifs }}</td><td class="num">{{ r.expires }}</td>
+              <td class="num">{{ r.desactives }}</td><td class="num">{{ r.inconnus }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{% macro groupe_constats(g, famille) %}
+  <details class="groupe groupe--{{ g.gravite or 'notif' }}">
+    <summary>
+      <span class="groupe__nb">{{ g.constats|length }}</span>
+      <span class="groupe__titre">{{ g.titre }}</span>
+      <span class="gravite gravite--{{ g.gravite or 'notif' }}">{{ g.libelle_gravite }}</span>
+    </summary>
+    <p class="groupe__explication">{{ g.explication }}</p>
+    <div class="tableau-defile">
+      <table class="tableau tableau--compact">
+        <thead><tr><th scope="col">Identifiant</th><th scope="col">Catégorie</th><th scope="col">Statut</th><th scope="col">Détail</th></tr></thead>
+        <tbody>
+          {% for k in g.constats %}
+            {% set compte = revue.compte(k.identifiant) %}
+            <tr><td><code>{{ k.identifiant }}</code></td>
+                <td>{{ categories[compte.categorie].libelle if compte else '-' }}</td>
+                <td>{{ statuts[compte.statut] if compte else '-' }}</td>
+                <td>{{ k.detail }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </details>
+{% endmacro %}
+
+<section class="bloc">
+  <h2>Anomalies</h2>
+  {% if anomalies %}
+    {% for g in anomalies %}{{ groupe_constats(g, 'anomalie') }}{% endfor %}
+  {% else %}
+    <p class="vide">Aucune anomalie détectée.</p>
+  {% endif %}
+</section>
+
+<section class="bloc">
+  <h2>Notifications à vérifier</h2>
+  <p class="aide-bloc">Contradictions entre l'identifiant et la date d'expiration. Elles ne signalent pas forcément un risque.</p>
+  {% if notifications %}
+    {% for g in notifications %}{{ groupe_constats(g, 'notification') }}{% endfor %}
+  {% else %}
+    <p class="vide">Aucune contradiction relevée.</p>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="bloc">
+  <h2>Contrôle qualité des exports</h2>
+  {% if c.synthese.erreurs %}
+    <p class="verdict verdict--erreur">{{ c.synthese.erreurs }} point{{ 's' if c.synthese.erreurs > 1 }} bloquant{{ 's' if c.synthese.erreurs > 1 }} :
+      les fichiers concernés n'ont pas été pris en compte dans la revue.</p>
+  {% elif c.synthese.alertes %}
+    <p class="verdict verdict--alerte">Les données sont exploitables. Les points « À corriger » peuvent fausser certains totaux.</p>
+  {% else %}
+    <p class="verdict verdict--ok">Les données sont exploitables sans correction.</p>
+  {% endif %}
+
+  {% for f in c.fichiers %}
+  <article class="fichier">
+    <header class="fichier__tete">
+      <h3 class="fichier__nom">{{ f.nom }}</h3>
+      {% if f.lisible %}
+        <p class="fichier__meta">{{ f.format }}{% if f.encodage %}, {{ f.encodage|replace('utf-8-sig','UTF-8')|replace('cp1252','Windows-1252') }}{% endif %}{% if f.separateur %}, séparateur {{ f.separateur }}{% endif %}{% if f.feuille %}, feuille « {{ f.feuille }} »{% endif %}, en-tête ligne {{ f.ligne_entete }}, {{ f.lignes }} ligne{{ 's' if f.lignes > 1 }}</p>
+      {% else %}
+        <p class="fichier__meta">Non lu</p>
+      {% endif %}
+    </header>
+
+    <div class="fichier__corps">
+      <section class="constats" aria-label="Constats du contrôle qualité">
+        <h4>Constats</h4>
+        {% if f.constats %}
+          <ul class="constats__liste">
+            {% for k in f.constats %}
+              <li class="constat constat--{{ k.niveau }}">
+                <span class="constat__niveau">{{ libelles[k.niveau] }}</span>
+                <p class="constat__titre">{{ k.titre }}</p>
+                {% if k.detail %}<p class="constat__detail">{{ k.detail }}</p>{% endif %}
+                {% if k.exemples %}<p class="constat__exemples">{% for x in k.exemples %}<code>{{ x }}</code>{% endfor %}</p>{% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="vide">Aucun problème détecté dans ce fichier.</p>
+        {% endif %}
+        {% for a in f.avertissements|default([]) %}<p class="note">{{ a }}</p>{% endfor %}
+      </section>
+
+      {% if f.lisible %}
+      <section class="colonnes" aria-label="Correspondance des colonnes">
+        <h4>Colonnes reconnues</h4>
+        <table class="tableau tableau--compact">
+          <thead><tr><th scope="col">Dans le fichier</th><th scope="col">Lue comme</th></tr></thead>
+          <tbody>
+            {% for m in f.correspondance %}
+              <tr class="{{ '' if m.champ else 'non-reconnue' }}"><td>{{ m.colonne }}</td><td>{{ m.libelle or "Non exploitée" }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+      {% endif %}
+    </div>
+
+    {% if f.lisible and f.apercu.lignes %}
+      <details class="apercu">
+        <summary>Aperçu des {{ f.apercu.lignes|length }} premières lignes</summary>
+        <div class="tableau-defile">
+          <table class="tableau tableau--donnees">
+            <thead><tr>{% for h in f.apercu.entete %}<th scope="col">{{ h }}</th>{% endfor %}</tr></thead>
+            <tbody>
+              {% for ligne in f.apercu.lignes %}
+                <tr>{% for v in ligne %}<td{% if loop.first %} class="num"{% endif %}>{{ v }}</td>{% endfor %}</tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </details>
+    {% endif %}
+  </article>
+  {% endfor %}
+</section>
+
+<footer class="pied-page">
+  <form action="{{ url_for('supprimer_campagne', cid=c.id) }}" method="post"
+        data-confirmer="Supprimer cette campagne et ses fichiers de ce poste ? Cette action est définitive.">
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    <button type="submit" class="bouton bouton--danger">Supprimer la campagne</button>
+  </form>
+  <div class="pied-page__suite">
+    <form action="{{ url_for('recalculer', cid=c.id) }}" method="post">
+      <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+      <button type="submit" class="bouton bouton--secondaire">Recalculer avec les règles actuelles</button>
+    </form>
+    <a class="bouton bouton--secondaire" href="{{ url_for('accueil') }}">Nouvelle campagne</a>
+    <p class="note">Le recalcul réapplique config/regles.json (seuils, nomenclatures) sans redéposer les fichiers.</p>
+  </div>
+</footer>
+{% endblock %}

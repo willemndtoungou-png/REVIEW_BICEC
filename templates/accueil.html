@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% set actives = ["depot"] %}
+{% block titre %}Nouvelle campagne{% endblock %}
+{% block contenu %}
+<section class="entete-page">
+  <h1>Nouvelle campagne de revue</h1>
+  <p class="chapeau">Déposez les exports CSV d'ADAudit Plus de cette campagne. L'outil contrôle les données, classe
+    les comptes, relève les anomalies et prépare le rapport PDF.</p>
+</section>
+
+<form class="depot" action="{{ url_for('creer_campagne') }}" method="post" enctype="multipart/form-data"
+      data-max-octets="{{ max_mo * 1024 * 1024 }}" data-max-fichiers="{{ max_fichiers }}">
+  <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+
+  <div class="champs">
+    <label class="champ champ--large">
+      <span class="champ__libelle">Nom de la campagne</span>
+      <input type="text" name="nom" maxlength="120" placeholder="Revue trimestrielle des comptes temporaires" autocomplete="off">
+    </label>
+    <label class="champ">
+      <span class="champ__libelle">Date de la campagne</span>
+      <input type="date" name="date_campagne" value="{{ aujourdhui }}" required>
+    </label>
+  </div>
+
+  <label class="zone" data-zone>
+    <input class="zone__input" type="file" name="fichiers" accept=".csv,.xlsx" multiple required data-input>
+    <svg class="zone__icone" viewBox="0 0 48 48" aria-hidden="true">
+      <path d="M12 6h17l9 9v27H12z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M29 6v9h9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M18 25h14M18 30.5h14M18 36h9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+    </svg>
+    <span class="zone__titre">Glissez les exports ici</span>
+    <span class="zone__aide">ou <span class="zone__lien">choisissez-les sur le poste</span>. Fichiers CSV (XLSX accepté),
+      jusqu'à {{ max_fichiers }} fichiers et {{ max_mo }} Mo au total.</span>
+  </label>
+
+  <div class="selection" data-selection hidden>
+    <div class="selection__tete">
+      <p class="selection__resume" data-resume></p>
+      <button type="button" class="bouton bouton--discret" data-vider>Retirer tout</button>
+    </div>
+    <ul class="selection__liste" data-liste></ul>
+    <p class="message message--erreur" data-erreur hidden></p>
+  </div>
+
+  <div class="actions">
+    <button type="submit" class="bouton bouton--principal" data-envoyer disabled>Analyser les fichiers</button>
+  </div>
+</form>
+
+<section class="campagnes">
+  <h2>Campagnes enregistrées</h2>
+  {% if campagnes %}
+    <div class="tableau-defile">
+      <table class="tableau">
+        <thead>
+          <tr><th scope="col">Campagne</th><th scope="col">Date</th><th scope="col" class="num">Fichiers</th>
+              <th scope="col" class="num">Comptes</th><th scope="col" class="num">Anomalies</th><th scope="col">Qualité</th></tr>
+        </thead>
+        <tbody>
+          {% for c in campagnes %}
+            <tr>
+              <td><a href="{{ url_for('voir_campagne', cid=c.id) }}">{{ c.nom }}</a></td>
+              <td class="num">{{ c.date }}</td>
+              <td class="num">{{ c.fichiers }}</td>
+              <td class="num">{{ c.comptes }}</td>
+              <td class="num">{{ c.anomalies if c.anomalies is not none else '-' }}</td>
+              <td>{% if c.erreurs %}<span class="pastille pastille--erreur">{{ c.erreurs }} bloquant{{ 's' if c.erreurs > 1 }}</span>
+                  {% else %}<span class="pastille pastille--ok">Exploitable</span>{% endif %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="vide">Aucune campagne pour l'instant. La première apparaîtra ici après l'analyse de vos exports.</p>
+  {% endif %}
+</section>
+{% endblock %}

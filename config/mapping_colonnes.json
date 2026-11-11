@@ -1,0 +1,71 @@
+{
+  "_commentaire": "Correspondance entre les colonnes des exports ADAudit Plus et les champs internes de l'outil. Les alias sont des HYPOTHESES tant qu'un vrai export anonymise n'a pas ete fourni : ajouter ici les intitules exacts vus dans les exports. La comparaison ignore la casse, les accents, les espaces et la ponctuation.",
+  "champs": {
+    "identifiant": {
+      "libelle": "Identifiant (SamAccountName)",
+      "obligatoire": true,
+      "type": "texte",
+      "alias": ["SAM Account Name", "SamAccountName", "sAMAccountName", "Logon Name", "User Name", "Nom d'ouverture de session", "Identifiant", "Login", "Account Name", "Created User"]
+    },
+    "nom_affiche": {
+      "libelle": "Nom affiché",
+      "obligatoire": false,
+      "type": "texte",
+      "alias": ["Display Name", "Full Name", "Nom complet", "Nom affiche", "Name", "Nom"]
+    },
+    "upn": {
+      "libelle": "UserPrincipalName",
+      "obligatoire": false,
+      "type": "texte",
+      "alias": ["User Principal Name", "UserPrincipalName", "UPN"]
+    },
+    "statut": {
+      "libelle": "Statut du compte",
+      "obligatoire": false,
+      "type": "texte",
+      "alias": ["Account Status", "Status", "Statut", "Enabled", "Etat du compte", "Account Enabled"]
+    },
+    "date_creation": {
+      "libelle": "Date de création",
+      "obligatoire": false,
+      "type": "date",
+      "alias": ["Created Time", "Creation Time", "When Created", "whenCreated", "Date de creation", "Created On", "Created Date", "Time"]
+    },
+    "date_expiration": {
+      "libelle": "Date d'expiration",
+      "obligatoire": false,
+      "type": "date",
+      "alias": ["Account Expires", "Account Expiration Date", "AccountExpirationDate", "Expiry Date", "Expiration Date", "Date d'expiration", "Expire le"]
+    },
+    "derniere_connexion": {
+      "libelle": "Dernière connexion",
+      "obligatoire": false,
+      "type": "date",
+      "alias": ["Last Logon Time", "Last Logon", "LastLogonTimestamp", "Last Logon Timestamp", "Derniere connexion", "Recent Logon Time"]
+    },
+    "operateur": {
+      "libelle": "Opérateur (créateur du compte)",
+      "obligatoire": false,
+      "type": "texte",
+      "alias": ["Created By", "Caller User Name", "Caller", "Operateur", "Modified By", "Performed By"]
+    },
+    "ou": {
+      "libelle": "Unité d'organisation (OU)",
+      "obligatoire": false,
+      "type": "texte",
+      "alias": ["OU Name", "OU", "Organizational Unit", "Distinguished Name", "DistinguishedName", "Container", "Unite d'organisation"]
+    },
+    "groupes": {
+      "libelle": "Groupes (memberOf)",
+      "obligatoire": false,
+      "type": "texte",
+      "alias": ["Member Of", "MemberOf", "Groups", "Groupes", "Group Membership"]
+    },
+    "mot_de_passe_jamais_expire": {
+      "libelle": "Mot de passe n'expire jamais",
+      "obligatoire": false,
+      "type": "texte",
+      "alias": ["Password Never Expires", "PasswordNeverExpires", "Mot de passe n'expire jamais"]
+    }
+  }
+}
